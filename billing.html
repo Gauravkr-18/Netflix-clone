@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Netflix Billing System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #141414;
+        color: #fff;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      h1 {
+        text-align: center;
+        color: #e50914;
+      }
+
+      .plans {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .plan {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        background: #333;
+        border-radius: 5px;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+
+      .plan:hover {
+        border-color: #e50914;
+      }
+
+      .plan.selected {
+        border-color: #e50914;
+      }
+
+      .actions {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #e50914;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #f40612;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="plan-page">
+      <h1>Choose Your Plan</h1>
+      <div class="plans">
+        <div class="plan" data-name="Basic" data-price="799">
+          <span class="plan-name">Basic</span>
+          <span class="plan-price">₹799/month</span>
+        </div>
+        <div class="plan" data-name="Standard" data-price="999">
+          <span class="plan-name">Standard</span>
+          <span class="plan-price">₹999/month</span>
+        </div>
+        <div class="plan" data-name="Premium" data-price="1299">
+          <span class="plan-name">Premium</span>
+          <span class="plan-price">₹1299/month</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="continue">Continue</button>
+      </div>
+    </div>
+
+    <div class="container" id="payment-page" style="display: none">
+      <h1>Payment</h1>
+      <div>
+        <p>Selected Plan: <span id="selected-plan">None</span></p>
+        <p>Monthly Cost: <span id="selected-cost">₹0.00</span></p>
+      </div>
+      <label for="payment-method">Choose Payment Method:</label>
+      <select id="payment-method">
+        <option value="none">Select a Payment Method</option>
+        <option value="card">Credit/Debit Card</option>
+        <option value="upi">UPI</option>
+      </select>
+
+      <div id="card-details" style="display: none">
+        <label for="card-number">Card Number:</label>
+        <input
+          type="text"
+          id="card-number"
+          placeholder="Enter your card number"
+        />
+
+        <label for="expiry-date">Expiry Date:</label>
+        <input type="text" id="expiry-date" placeholder="MM/YY" />
+
+        <label for="cvv">CVV:</label>
+        <input type="text" id="cvv" placeholder="CVV" />
+      </div>
+
+      <div id="upi-details" style="display: none">
+        <label for="upi-app">Select UPI App:</label>
+        <select id="upi-app">
+          <option value="paytm">Paytm</option>
+          <option value="phonepe">PhonePe</option>
+          <option value="googlepay">Google Pay</option>
+          <option value="amazonpay">Amazon Pay</option>
+        </select>
+
+        <label for="upi-id">UPI ID:</label>
+        <input type="text" id="upi-id" placeholder="Enter your UPI ID" />
+      </div>
+
+      <div class="actions">
+        <button id="pay">Pay</button>
+      </div>
+    </div>
+
+    <div class="container" id="receipt-page" style="display: none">
+      <h1>Receipt</h1>
+      <div>
+        <p>Plan: <span id="receipt-plan">None</span></p>
+        <p>Cost: <span id="receipt-cost">₹0.00</span></p>
+        <p>Payment Method: <span id="receipt-method">None</span></p>
+        <p>Payment Details: <span id="receipt-details">None</span></p>
+      </div>
+      <div class="actions">
+        <button id="print-receipt">Print Receipt</button>
+      </div>
+    </div>
+
+    <script>
+      const plans = document.querySelectorAll('.plan');
+      const continueButton = document.getElementById('continue');
+      const payButton = document.getElementById('pay');
+      const printButton = document.getElementById('print-receipt');
+
+      const planPage = document.getElementById('plan-page');
+      const paymentPage = document.getElementById('payment-page');
+      const receiptPage = document.getElementById('receipt-page');
+
+      const selectedPlanDisplay = document.getElementById('selected-plan');
+      const selectedCostDisplay = document.getElementById('selected-cost');
+      const receiptPlan = document.getElementById('receipt-plan');
+      const receiptCost = document.getElementById('receipt-cost');
+      const receiptMethod = document.getElementById('receipt-method');
+      const receiptDetails = document.getElementById('receipt-details');
+
+      const paymentMethod = document.getElementById('payment-method');
+      const cardDetails = document.getElementById('card-details');
+      const upiDetails = document.getElementById('upi-details');
+
+      let selectedPlan = null;
+      let selectedCost = null;
+
+      // Plan selection
+      plans.forEach(plan => {
+        plan.addEventListener('click', () => {
+          plans.forEach(p => p.classList.remove('selected'));
+          plan.classList.add('selected');
+
+          selectedPlan = plan.getAttribute('data-name');
+          selectedCost = parseFloat(plan.getAttribute('data-price')).toFixed(2);
+        });
+      });
+
+      continueButton.addEventListener('click', () => {
+        if (selectedPlan) {
+          selectedPlanDisplay.textContent = selectedPlan;
+          selectedCostDisplay.textContent = ₹${selectedCost};
+          planPage.style.display = 'none';
+          paymentPage.style.display = 'block';
+        } else {
+          alert('Please select a plan first.');
+        }
+      });
+
+      // Payment method selection
+      paymentMethod.addEventListener('change', () => {
+        const method = paymentMethod.value;
+        cardDetails.style.display = method === 'card' ? 'block' : 'none';
+        upiDetails.style.display = method === 'upi' ? 'block' : 'none';
+      });
+
+      payButton.addEventListener('click', () => {
+        const method = paymentMethod.value;
+        if (method === 'none') {
+          alert('Please select a payment method.');
+          return;
+        }
+
+        receiptPlan.textContent = selectedPlan;
+        receiptCost.textContent = ₹${selectedCost};
+        receiptMethod.textContent = method === 'card' ? 'Card' : document.getElementById('upi-app').value;
+
+        // Add payment details
+        if (method === 'card') {
+          const cardNumber = document.getElementById('card-number').value;
+          receiptDetails.textContent = Card ending in ${cardNumber.slice(-4)};
+        } else if (method === 'upi') {
+          const upiId = document.getElementById('upi-id').value;
+          receiptDetails.textContent = UPI ID: ${upiId};
+        }
+
+        paymentPage.style.display = 'none';
+        receiptPage.style.display = 'block';
+      });
+
+      // Print receipt
+      printButton.addEventListener('click', () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>
